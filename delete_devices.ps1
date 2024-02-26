@@ -1,11 +1,11 @@
-﻿# Получить список всех устройств и отсортировать его по имени
+# Получаем список всех устройств и сортируем его по имени
 $devices = Get-PnpDevice | Sort-Object FriendlyName
 
-# Создать массивы для хранения InstanceId активных и неактивных устройств
+# Создаем массивы для хранения InstanceId активных и неактивных устройств
 $activeDevices = @()
 $inactiveDevices = @()
 
-# Пройти по каждому устройству и вывести информацию с соответствующим цветом
+# Проходим по каждому устройству, выводим информацию и определяем его статус
 foreach ($device in $devices) {
     if ($device.Status -eq 'OK') {
         Write-Host "$($device.FriendlyName) (Активно)" -ForegroundColor Green
@@ -16,12 +16,18 @@ foreach ($device in $devices) {
     }
 }
 
+# Если найдены неактивные устройства
 if ($inactiveDevices.Count -gt 0) {
+    # Выводим информацию о количестве неактивных устройств и запрашиваем подтверждение на удаление
     Write-Host "Найдено неактивных устройств: $($inactiveDevices.Count)"
     $confirm = Read-Host "Хотите удалить все неактивные устройства? (y/n)"
+    
+    # Если пользователь согласен удалить неактивные устройства
     if ($confirm -eq 'y') {
+        # Проходим по списку неактивных устройств и удаляем их
         foreach ($deviceId in $inactiveDevices) {
             $Result = & pnputil /remove-device $deviceId
+            # Проверяем результат удаления и выводим соответствующее сообщение
             if ($LastExitCode -eq 0) {
                 Write-Host "Устройство с InstanceId $deviceId было удалено." -ForegroundColor Yellow
             } else {
@@ -29,9 +35,10 @@ if ($inactiveDevices.Count -gt 0) {
             }
         }
     } else {
+        # Если пользователь не согласен на удаление
         Write-Host "Неактивные устройства не были удалены." -ForegroundColor Cyan
     }
 } else {
+    # Если неактивных устройств нет
     Write-Host "Не найдено неактивных устройств." -ForegroundColor Cyan
 }
-
