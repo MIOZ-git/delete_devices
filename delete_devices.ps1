@@ -26,12 +26,12 @@ if ($inactiveDevices.Count -gt 0) {
     if ($confirm -eq 'y') {
         # Проходим по списку неактивных устройств и удаляем их
         foreach ($deviceId in $inactiveDevices) {
+            $device = $devices | Where-Object { $_.InstanceId -eq $deviceId }
             $Result = & pnputil /remove-device $deviceId
-            # Проверяем результат удаления и выводим соответствующее сообщение
             if ($LastExitCode -eq 0) {
-                Write-Host "Устройство с InstanceId $deviceId было удалено." -ForegroundColor Yellow
+                Write-Host "Устройство '$($device.FriendlyName)' с InstanceId $deviceId было удалено." -ForegroundColor Yellow
             } else {
-                Write-Host "Устройство с InstanceId $deviceId не было удалено." -ForegroundColor Magenta
+                Write-Host "Устройство '$($device.FriendlyName)' с InstanceId $deviceId не было удалено." -ForegroundColor Magenta
             }
         }
     } else {
@@ -42,3 +42,34 @@ if ($inactiveDevices.Count -gt 0) {
     # Если неактивных устройств нет
     Write-Host "Не найдено неактивных устройств." -ForegroundColor Cyan
 }
+
+# Определяем путь для записи лога
+$logFilePath = "C:\logs\log_delete.txt"
+
+# Открываем файл для записи
+$logFile = New-Item -Path $logFilePath -ItemType file -Force
+
+# Создаем строку с информацией о результате выполнения скрипта
+$logMessage = "$(Get-Date) "
+
+$removedDevicesLog = foreach ($deviceId in $inactiveDevices) {
+    $device = $devices | Where-Object { $_.InstanceId -eq $deviceId }
+    $removedDeviceInfo = "Устройство '$($device.FriendlyName)' с InstanceId $deviceId"
+    
+    if ($confirm -eq 'y') {
+        $removedDeviceInfo += " было удалено.`n"
+    } elseif ($confirm -eq 'n') {
+        $removedDeviceInfo += " не было удалено.`n"
+    }
+    
+    $removedDeviceInfo
+}
+
+if ($inactiveDevices.Count -eq 0) {
+    $logMessage += "Не найдено неактивных устройств"
+} else {
+    $logMessage += "Неактивные устройства не были удалены"
+}
+
+# Записываем информацию в лог
+Add-Content -Path $logFilePath -Value ($logMessage + "`n" + $removedDevicesLog)
