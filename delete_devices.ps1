@@ -29,14 +29,14 @@ if ($inactiveDevices.Count -gt 0) {
             $device = $devices | Where-Object { $_.InstanceId -eq $deviceId }
             $Result = & pnputil /remove-device $deviceId
             if ($LastExitCode -eq 0) {
-                Write-Host "Устройство '$($device.FriendlyName)' с InstanceId $deviceId было удалено." -ForegroundColor Yellow
+                Write-Host "Устройство '$($device.FriendlyName)' с InstanceId $deviceId было удалено.`n" -ForegroundColor Yellow
             } else {
-                Write-Host "Устройство '$($device.FriendlyName)' с InstanceId $deviceId не было удалено." -ForegroundColor Magenta
+                Write-Host "Устройство '$($device.FriendlyName)' с InstanceId $deviceId не было удалено.`n" -ForegroundColor Magenta
             }
         }
     } else {
         # Если пользователь не согласен на удаление
-        Write-Host "Неактивные устройства не были удалены." -ForegroundColor Cyan
+        Write-Host "Неактивные устройства НЕ были удалены." -ForegroundColor Cyan
     }
 } else {
     # Если неактивных устройств нет
@@ -44,10 +44,7 @@ if ($inactiveDevices.Count -gt 0) {
 }
 
 # Определяем путь для записи лога
-$logFilePath = "C:\logs\log_delete.txt"
-
-# Открываем файл для записи
-$logFile = New-Item -Path $logFilePath -ItemType file -Force
+$logFilePath = "C:\logs\delete_log.txt"
 
 # Создаем строку с информацией о результате выполнения скрипта
 $logMessage = "$(Get-Date) "
@@ -68,8 +65,8 @@ $removedDevicesLog = foreach ($deviceId in $inactiveDevices) {
 if ($inactiveDevices.Count -eq 0) {
     $logMessage += "Не найдено неактивных устройств"
 } else {
-    $logMessage += "Неактивные устройства не были удалены"
+    $logMessage += "Неактивные устройства были удалены"
 }
 
-# Записываем информацию в лог
+# Дополняем информацию в логе
 Add-Content -Path $logFilePath -Value ($logMessage + "`n" + $removedDevicesLog)
