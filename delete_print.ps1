@@ -1,5 +1,17 @@
-# Определение пути к файлу журнала
-$logFile = "C:\logs\log_printer.txt"
+# Определение пути к папке журналов и файлу журнала
+$logFolder = "C:\path\to\logs"
+$logFile = "$logFolder\log_printer.txt"
+
+# Проверка наличия папки для журналов
+if (-Not (Test-Path -Path $logFolder)) {
+    New-Item -ItemType Directory -Path $logFolder | Out-Null
+    Write-Host "Папка '$logFolder' была создана."
+}
+
+# Проверка наличия файла журнала
+if (-Not (Test-Path -Path $logFile)) {
+    New-Item -ItemType File -Path $logFile | Out-Null
+}
 
 # Функция для записи в файл журнала
 function Write-Log {
@@ -26,7 +38,7 @@ if ($printerCount -eq 0) {
             Remove-Printer -Name $printer.Name
             Write-Log "Принтер '$($printer.Name)' был удален."
         } catch {
-            Write-Log "Не удалось удалить принтер '$($printer.Name)': $_"
+            Write-Log "Не удалось удалить принтер '$($printer.Name)': $($_ | Out-String)"
         }
     }
 }
@@ -43,7 +55,7 @@ if ($driverCount -eq 0) {
             Remove-PrinterDriver -Name $driver.Name
             Write-Log "Драйвер '$($driver.Name)' был удален."
         } catch {
-            Write-Log "Не удалось удалить драйвер '$($driver.Name)': $_"
+            Write-Log "Не удалось удалить драйвер '$($driver.Name)': $($_ | Out-String)"
         }
     }
 }
